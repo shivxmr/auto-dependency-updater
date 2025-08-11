@@ -52,11 +52,17 @@ def update_requirements_file(updates):
     requirements_path.write_text("\n".join(new_lines) + "\n")
     print("requirements.txt updated successfully.")
 
+import os
+
 def main():
     """Main function to check and update dependencies."""
     updates = check_for_outdated_packages()
     if updates:
         update_requirements_file(updates)
+        if "GITHUB_OUTPUT" in os.environ:
+            update_list_md = "\\n".join([f"- `{k}` to `{v}`" for k, v in updates.items()])
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write(f"updates={update_list_md}")
 
 if __name__ == "__main__":
     main()
