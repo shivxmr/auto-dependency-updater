@@ -6,6 +6,8 @@ A GitHub Actions bot that automatically checks for outdated Python dependencies,
 
 This project was born out of an exploration into the power of GitHub Actions. The goal was to move beyond simple CI/CD and build a truly automated, intelligent bot that could handle a common and critical task: keeping dependencies up to date. The key challenge was not just to automate the updates, but to do so safely, without blindly introducing breaking changes. This led to the core feature of this project: an integrated testing step that validates dependency updates before proposing them in a pull request.
 
+This repository is designed to be a template and a learning tool for anyone looking to build robust automation for their own projects.
+
 ## Features
 
 -   **Automated Dependency Scanning:** Runs on a weekly schedule to check for outdated packages in your `requirements.txt` file.
@@ -44,3 +46,41 @@ To use this bot in your own repository, follow these steps:
     -   Click **Save**.
 
 That's it! The bot will now run automatically and help you keep your dependencies up to date safely.
+
+## Customization
+
+You can easily customize the bot's behavior by editing the `.github/workflows/dependency-updater.yml` file.
+
+### Changing the Schedule
+
+To change how often the bot runs, modify the `cron` schedule. The default is every Monday at midnight UTC. You can use a tool like [crontab.guru](https://crontab.guru/) to help you create the correct syntax.
+
+```yaml
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Runs every Monday at midnight UTC
+```
+
+### Changing Pull Request Details
+
+You can change the title, body, branch name, and labels for the pull requests by modifying the `with` section of the `peter-evans/create-pull-request` steps.
+
+For example, to change the label for failing tests:
+
+```yaml
+      - name: Create Pull Request if tests fail
+        # ...
+        with:
+          # ...
+          labels: "breaking-change, needs-review"
+```
+
+### Changing the Python Version
+
+To use a different version of Python, simply change the `python-version` value in the "Set up Python" step.
+
+```yaml
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # Change this to your desired version
