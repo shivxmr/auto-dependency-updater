@@ -36,6 +36,11 @@ To use this bot in your own repository, follow these steps:
 1.  **Copy the Files:** Copy the `.github`, `scripts`, and `tests` directories, as well as the `app.py`, `requirements.txt`, and `.gitignore` files, into your repository.
 2.  **Customize `requirements.txt`:** Add your project's dependencies to the `requirements.txt` file.
 3.  **Write Your Tests:** Create tests for your application in the `tests` directory. The bot relies on these tests to ensure that dependency updates are safe.
-4.  **Permissions:** Ensure your repository's Actions settings allow workflows to create pull requests. Go to **Settings** > **Actions** > **General** and make sure "Read and write permissions" is selected under "Workflow permissions".
+4.  **Permissions:** Ensure your repository's Actions settings allow workflows to create pull requests.
+    -   Go to your repository's **Settings** > **Actions** > **General**.
+    -   Scroll down to "Workflow permissions".
+    -   Select **"Read and write permissions"**.
+    -   Check the box for **"Allow GitHub Actions to create and approve pull requests"**.
+    -   Click **Save**.
 
 That's it! The bot will now run automatically and help you keep your dependencies up to date safely.
