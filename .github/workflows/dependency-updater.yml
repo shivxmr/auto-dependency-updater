@@ -1,0 +1,86 @@
+name: Dependency Update Bot
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Runs every Monday at midnight UTC
+  workflow_dispatch: {} # Allows manual triggering
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check for outdated packages
+        id: check_deps
+        run: python scripts/check_dependencies.py
+
+      - name: Check for changes
+        id: git_diff
+        run: |
+          git diff --quiet requirements.txt || echo "changed=true" >> $GITHUB_OUTPUT
+        
+      - name: Install updated dependencies and run tests
+        if: steps.git_diff.outputs.changed == 'true'
+        id: run_tests
+        run: |
+          pip install -r requirements.txt
+          pytest
+          echo "tests_passed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Create Pull Request if tests pass
+        if: steps.git_diff.outputs.changed == 'true' && steps.run_tests.outputs.tests_passed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: Update project dependencies"
+          title: "feat: Update project dependencies"
+          body: |
+            Automated dependency update.
+            
+            This PR was created by the Dependency Update Bot. It updates the following packages to their latest versions:
+            
+            ```
+            ${{ steps.check_deps.outputs.updates }}
+            ```
+            
+            The test suite passed with these new versions.
+          branch: "auto-dependency-update"
+          delete-branch: true
+
+      - name: Create Pull Request if tests fail
+        if: steps.git_diff.outputs.changed == 'true' && steps.run_tests.outputs.tests_passed != 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "fix: Update dependencies (tests failing)"
+          title: "fix: Update dependencies (tests failing)"
+          body: |
+            Automated dependency update.
+            
+            **⚠️ Warning: The automated test suite failed with these updates.**
+            
+            This PR was created by the Dependency Update Bot. It updates the following packages to their latest versions:
+            
+            ```
+            ${{ steps.check_deps.outputs.updates }}
+            ```
+            
+            Please review these changes carefully and fix any breaking changes before merging.
+          branch: "auto-dependency-update-failing"
+          delete-branch: true
+          labels: "⚠️ Breaking Change"
